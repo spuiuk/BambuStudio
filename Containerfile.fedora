@@ -1,0 +1,46 @@
+# Build Bambu Slicer in a container
+#
+# This container image has been modified to use Fedora instead of Ubuntu - SPrabhu
+#
+# Build an AppImage using rootless Podman (refer to https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md):
+# rm -rf build; podman build . -t bambu-studio-builder && podman run --rm localhost/bambu-studio-builder /bin/bash -c 'tar -c $(find build | grep ubu64.AppImage | head -1)' | tar -xv
+#
+# Troubleshooting the build container:
+# podman run -it --name bambu-studio-builder localhost/bambu-studio-builder /bin/bash
+#
+# Debugging the resulting AppImage:
+#   1) Install `gdb`
+#   2) In a terminal in the same directory as the AppImage, start it with following:
+#      echo -e "run\nbt\nquit" | gdb ./BambuStudio_ubu64.AppImage
+#   3) Find related issue using backtrace output for clues and add backtrace to it on github
+#
+# TODO: bind mount BambuStudio to inside the container instead of COPY to enable faster rebuilds during dev work.
+
+FROM registry.fedoraproject.org/fedora:37
+ENV REFRESHED_AT 2023-01-20-1
+
+RUN dnf update -y
+
+# FROM https://github.com/bambulab/BambuStudio/wiki/Linux-Compile-Guide
+RUN dnf install -y gcc gcc-c++ cmake mesa-libGL-devel mesa-libGLU-devel \
+    m4 perl extra-cmake-modules wayland-devel wayland-protocols-devel libxkbcommon-devel \
+    gtk3-devel webkit2gtk3-devel gstreamer1-devel gstreamer1-plugins-base-devel \
+    gstreamer1-plugin-openh264 mesa-libOSMesa-devel
+
+# Extras from Containerfile for Ubuntu
+RUN dnf install -y curl wget file sudo git
+
+VOLUME /BambuStudio
+
+WORKDIR /BambuStudio
+
+RUN mkdir /BambuStudio/deps/build/
+RUN cd /BambuStudio/deps/build && cmake ../ -DDESTDIR="/BambuStudio/BambuStudio_dep" -DCMAKE_BUILD_TYPE=Release -DDEP_WX_GTK3=1 && make
+
+RUN mkdir /BambuStudio/install_dir /BambuStudio/build
+RUN cd /BambuStudio/build && cmake .. -DSLIC3R_STATIC=ON -DSLIC3R_GTK=3 -DBBL_RELEASE_TO_PUBLIC=1 -DCMAKE_PREFIX_PATH="/BambuStudio/BambuStudio_dep/usr/local" -DCMAKE_INSTALL_PREFIX="../install_dir" -DCMAKE_BUILD_TYPE=Release && cmake --build . --target install --config Release
+
+# Build AppImage
+ENV container podman
+RUN cd /BambuStudio/build && /bin/bash /BambuStudio/build/src/BuildLinuxImage.sh -i
+RUN cd /BambuStudio/build && mv BambuStudio_ubu64.AppImage BambuStudio_fedora64.AppImage
