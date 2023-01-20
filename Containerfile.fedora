@@ -43,4 +43,4 @@ RUN cd /BambuStudio/build && cmake .. -DSLIC3R_STATIC=ON -DSLIC3R_GTK=3 -DBBL_RE
 # Build AppImage
 ENV container podman
 RUN cd /BambuStudio/build && /bin/bash /BambuStudio/build/src/BuildLinuxImage.sh -i
-RUN cd /BambuStudio/build && mv BambuStudio_ubu64.AppImage BambuStudio_fedora64.AppImage
+RUN cd /BambuStudio/build && mv BambuStudio_ubu64.AppImage BambuStudio_F37_`git describe --tags`.AppImage
