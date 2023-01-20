@@ -34,9 +34,11 @@ VOLUME /BambuStudio
 
 WORKDIR /BambuStudio
 
+# Build deps
 RUN mkdir /BambuStudio/deps/build/
 RUN cd /BambuStudio/deps/build && cmake ../ -DDESTDIR="/BambuStudio/BambuStudio_dep" -DCMAKE_BUILD_TYPE=Release -DDEP_WX_GTK3=1 && make
 
+# Build BambuStudio
 RUN mkdir /BambuStudio/install_dir /BambuStudio/build
 RUN cd /BambuStudio/build && cmake .. -DSLIC3R_STATIC=ON -DSLIC3R_GTK=3 -DBBL_RELEASE_TO_PUBLIC=1 -DCMAKE_PREFIX_PATH="/BambuStudio/BambuStudio_dep/usr/local" -DCMAKE_INSTALL_PREFIX="../install_dir" -DCMAKE_BUILD_TYPE=Release && cmake --build . --target install --config Release
 
