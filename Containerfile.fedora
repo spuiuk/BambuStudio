@@ -43,7 +43,7 @@ ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 
 # Build BambuStudio
 RUN mkdir -p /BambuStudio/install_dir /BambuStudio/build
-RUN cd /BambuStudio/build && cmake .. -DSLIC3R_STATIC=ON -DSLIC3R_GTK=3 -DBBL_RELEASE_TO_PUBLIC=1 -DCMAKE_PREFIX_PATH="/BambuStudio/BambuStudio_dep/usr/local" -DCMAKE_INSTALL_PREFIX="../install_dir" -DCMAKE_BUILD_TYPE=Release && cmake --build . --target install --config Release
+RUN cd /BambuStudio/build && cmake .. -DSLIC3R_STATIC=ON -DSLIC3R_GTK=3 -DBBL_RELEASE_TO_PUBLIC=1 -DCMAKE_PREFIX_PATH="/BambuStudio/BambuStudio_dep/usr/local" -DCMAKE_INSTALL_PREFIX="../install_dir" -DCMAKE_BUILD_TYPE=Release && cmake --build . --target install --config Release -m4
 
 # Build AppImage
 ENV container podman
